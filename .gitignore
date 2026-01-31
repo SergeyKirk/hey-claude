@@ -1,0 +1,41 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Serena config (code analysis tool)
+.serena/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Logs
+logs/
+*.log
+
+# Sensitive config (use config.yaml.example as template)
+config.yaml
+
+# Environment variables
+.env
+.env.local
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temporary audio files
+*.wav
+*.mp3
+
+# Picovoice model files (user must download their own)
+*.ppn
+Hey-Claude_*/

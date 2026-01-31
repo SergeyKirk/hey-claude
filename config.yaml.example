@@ -1,0 +1,55 @@
+# Claude Voice Command System Configuration
+
+# Picovoice settings
+picovoice:
+  # Get your access key from https://console.picovoice.ai/
+  access_key: "YOUR_PICOVOICE_ACCESS_KEY"
+  # Path to the wake word model file
+  wake_word_model: "Hey-Claude_en_mac_v4_0_0/Hey-Claude_en_mac_v4_0_0.ppn"
+
+# Speech-to-text settings
+stt:
+  # Local whisper.cpp server endpoint
+  whisper_url: "http://localhost:2022/v1/audio/transcriptions"
+  # Fallback to OpenAI API if local fails (requires OPENAI_API_KEY env var)
+  use_openai_fallback: false
+
+# Command detection settings
+command:
+  # Keyword to end command (case-insensitive)
+  end_keyword: "over"
+  # Silence timeout in seconds (fallback if end keyword not detected)
+  silence_timeout: 2.0
+  # Maximum command duration in seconds
+  max_duration: 30.0
+
+# Claude Code settings
+claude:
+  # Working directory for Claude Code
+  working_directory: "~/Documents"
+  # Path to claude binary
+  binary_path: "/opt/homebrew/bin/claude"
+
+# Audio settings
+audio:
+  # Sample rate (Porcupine requires 16000)
+  sample_rate: 16000
+  # Channels (mono)
+  channels: 1
+  # Input device name (use "default" for system default, or specify device name)
+  # To avoid Bluetooth audio quality issues, use your Mac's built-in microphone:
+  # e.g., "MacBook Pro Microphone" or "Built-in Microphone"
+  # To list available input devices, run: python3 -c "import sounddevice; print(sounddevice.query_devices())"
+  input_device: "default"
+
+# Terminal settings
+terminal:
+  # Terminal app to use: "iterm" or "terminal"
+  app: "iterm"
+
+# Logging settings
+logging:
+  # Log file path (relative to project directory)
+  log_file: "logs/voice_commands.log"
+  # Log level: DEBUG, INFO, WARNING, ERROR
+  level: "INFO"

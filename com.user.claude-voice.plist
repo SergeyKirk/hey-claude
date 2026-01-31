@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<!--
+    This is a template plist file. The actual plist is generated dynamically
+    by manage.sh when you run ./manage.sh install, with the correct paths
+    for your system and your Picovoice access key embedded.
+
+    This file is only used as a fallback if PICOVOICE_ACCESS_KEY is not set
+    during install (which is not recommended for production use).
+-->
+<dict>
+    <key>Label</key>
+    <string>com.user.claude-voice</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>PROJECT_DIR/.venv/bin/python</string>
+        <string>PROJECT_DIR/claude_voice.py</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>PROJECT_DIR</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>PROJECT_DIR/logs/daemon_stdout.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>PROJECT_DIR/logs/daemon_stderr.log</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    </dict>
+</dict>
+</plist>
