@@ -26,8 +26,8 @@ case "$1" in
         # Activate and install dependencies
         echo "Installing Python dependencies..."
         source "$VENV_PATH/bin/activate"
-        pip install --upgrade pip
-        pip install -r "$PROJECT_DIR/requirements.txt"
+        pip3 install --upgrade pip
+        pip3 install -r "$PROJECT_DIR/requirements.txt"
 
         # Generate plist with environment variable if set
         echo "Installing launchd service..."
@@ -193,7 +193,7 @@ EOF
         # Run in foreground (for testing)
         echo -e "${YELLOW}Running in foreground (Ctrl+C to stop)...${NC}"
         source "$VENV_PATH/bin/activate"
-        python "$PROJECT_DIR/claude_voice.py"
+        python3 "$PROJECT_DIR/claude_voice.py"
         ;;
 
     uninstall)
