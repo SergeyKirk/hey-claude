@@ -319,6 +319,7 @@ Voice command: "{command}"'''
 
     def _launch_iterm(self, shell_cmd: str) -> bool:
         """Launch in iTerm2 - new tab if window exists, otherwise new window"""
+        escaped_cmd = shell_cmd.replace('"', '\\"')
         applescript = f'''
         tell application "iTerm"
             activate
@@ -326,13 +327,13 @@ Voice command: "{command}"'''
                 tell current window
                     create tab with default profile
                     tell current session
-                        write text "{shell_cmd.replace('"', '\\"')}"
+                        write text "{escaped_cmd}"
                     end tell
                 end tell
             else
                 create window with default profile
                 tell current session of current window
-                    write text "{shell_cmd.replace('"', '\\"')}"
+                    write text "{escaped_cmd}"
                 end tell
             end if
         end tell
@@ -347,10 +348,11 @@ Voice command: "{command}"'''
 
     def _launch_terminal(self, shell_cmd: str) -> bool:
         """Launch in Terminal.app"""
+        escaped_cmd = shell_cmd.replace('"', '\\"')
         applescript = f'''
         tell application "Terminal"
             activate
-            do script "{shell_cmd.replace('"', '\\"')}"
+            do script "{escaped_cmd}"
         end tell
         '''
         subprocess.run(["osascript", "-e", applescript], check=True, capture_output=True)
