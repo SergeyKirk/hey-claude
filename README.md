@@ -4,13 +4,12 @@ Always-on macOS voice assistant that listens for "Hey Claude" and executes comma
 
 ## Features
 
-- Always-on wake word detection ("Hey Claude") using Picovoice Porcupine
+- Wake word detection ("Hey Claude") using Picovoice Porcupine
 - Natural voice commands with "over" end trigger (or 2-second pause)
 - Automatic Claude Code execution in new iTerm tab
 - Voice responses via VoiceMode MCP (Whisper + Kokoro TTS)
-- Secure access key handling (environment variables)
-- macOS launchd service for auto-start on login
 - Built-in mic support to avoid Bluetooth audio quality issues
+- Secure access key handling via environment variables or config file
 
 ## Prerequisites
 
@@ -26,7 +25,7 @@ Always-on macOS voice assistant that listens for "Hey Claude" and executes comma
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/yourusername/hey-claude.git
+git clone https://github.com/SergeyKirk/hey-claude.git
 cd hey-claude
 ./manage.sh install
 ```
@@ -46,9 +45,6 @@ cd hey-claude
 # Add to ~/.zshrc or ~/.bashrc
 export PICOVOICE_ACCESS_KEY='your-access-key-here'
 source ~/.zshrc
-
-# Re-run install to embed in launchd service
-./manage.sh install
 ```
 
 **Option B: Config File**
@@ -65,37 +61,36 @@ voicemode service start whisper  # STT on port 2022
 voicemode service start kokoro   # TTS on port 8880
 ```
 
-### 5. Start the Daemon
+### 5. Run Hey Claude
 
 ```bash
-./manage.sh start
+./manage.sh run
 ```
+
+Keep this terminal window open - the voice assistant runs in the foreground.
 
 ## Usage
 
-1. Say **"Hey Claude"** to activate (you'll hear a beep)
+1. Say **"Hey Claude"** to activate
 2. Speak your command naturally
 3. Say **"over"** to finish (or pause for 2 seconds)
 4. Claude executes in a new iTerm tab and responds via voice
+5. After Claude finishes, say "Hey Claude" again for the next command
 
 ### Example Commands
 
 - "Hey Claude, what time is it, over"
 - "Hey Claude, create a Python function to sort a list, over"
-- "Hey Claude, look up task 3700 in Jira, over"
+- "Hey Claude, explain this error message, over"
 - "Hey Claude, summarize this file, over"
 
 ## Management Commands
 
 ```bash
-./manage.sh install   # Install dependencies & launchd service
-./manage.sh start     # Start the voice daemon
-./manage.sh stop      # Stop the daemon
-./manage.sh restart   # Restart the daemon
-./manage.sh status    # Check if running
+./manage.sh install   # Install dependencies
+./manage.sh run       # Run the voice assistant (foreground)
 ./manage.sh logs      # View command history & logs
-./manage.sh run       # Run in foreground (for testing/debugging)
-./manage.sh uninstall # Remove launchd service
+./manage.sh uninstall # Remove launchd service (if installed)
 ```
 
 ## Configuration
@@ -125,14 +120,14 @@ terminal:
 
 ### Bluetooth Audio Quality Fix
 
-If you use Bluetooth headphones and experience degraded audio quality when the daemon is running, configure `input_device` to use your Mac's built-in microphone:
+If you use Bluetooth headphones and experience degraded audio quality, configure `input_device` to use your Mac's built-in microphone:
 
 ```yaml
 audio:
   input_device: "MacBook Pro Microphone"  # or "Built-in Microphone"
 ```
 
-This forces the daemon to use the built-in mic without changing your system default (so calls and other apps still use your headphones normally).
+This uses the built-in mic for wake word detection without affecting your headphone audio output. Your calls and other apps still use Bluetooth normally.
 
 To list available input devices:
 ```bash
@@ -170,8 +165,8 @@ python3 -c "import sounddevice; print(sounddevice.query_devices())"
 
 ### Wake word not detected
 - Check microphone permissions: System Settings > Privacy & Security > Microphone
+- Ensure Terminal has microphone access
 - Verify the `.ppn` model file path is correct in config
-- Try running `./manage.sh run` to see debug output
 - Ensure your mic is not muted
 
 ### Whisper transcription fails
@@ -185,18 +180,21 @@ python3 -c "import sounddevice; print(sounddevice.query_devices())"
 ### Audio quality degraded (Bluetooth headphones)
 - This happens when macOS switches your headphones to HFP mode
 - Solution: Set `input_device: "MacBook Pro Microphone"` in config.yaml
-- This uses the built-in mic without affecting your headphone audio output
 
 ### VoiceMode keeps talking after closing iTerm
-- This is expected - the TTS process runs independently
-- Add this alias to stop it: `alias shutup='pkill -f "kokoro\|tts"'`
+- The TTS process runs independently
+- Stop it with: `pkill -f "kokoro\|tts"` (or add as alias: `alias shutup='pkill -f "kokoro\|tts"'`)
+
+## Known Limitations
+
+- **Requires terminal window**: Currently runs in foreground via `./manage.sh run`. Background service (`./manage.sh start`) exists but has macOS microphone permission issues with launchd.
+- **macOS only**: Uses Picovoice wake word models compiled for macOS arm64.
 
 ## Security
 
 - Access keys are never committed to git (`.gitignore`)
-- Use environment variables for production
-- The launchd service embeds the key securely when installed with env var set
-- Config file with access key is gitignored
+- Use environment variables or gitignored config.yaml
+- Never share your Picovoice access key
 
 ## License
 
