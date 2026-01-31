@@ -17,7 +17,7 @@ Always-on macOS voice assistant that listens for "Hey Claude" and executes comma
 - **macOS** with Apple Silicon (M1/M2/M3/M4)
 - **Python 3.10+**
 - **[Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code)** installed and configured
-- **[VoiceMode MCP](https://www.npmjs.com/package/@anthropic/voicemode-mcp)** with Whisper and Kokoro services running
+- **[VoiceMode MCP](https://github.com/mbailey/voicemode)** with Whisper and Kokoro services running
 - **[Picovoice](https://picovoice.ai/)** account (free tier available)
 - **iTerm2** (recommended) or Terminal.app
 
