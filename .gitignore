@@ -43,3 +43,6 @@ wake-word/
 build/
 dist/
 *.egg-info/
+
+# Icon build artifacts (keep .icns and .png)
+icon.iconset/

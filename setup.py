@@ -13,6 +13,7 @@ DATA_FILES = [
 
 OPTIONS = {
     'argv_emulation': False,
+    'iconfile': 'hey-claude.icns',
     'packages': ['pvporcupine', 'sounddevice', 'numpy', 'requests', 'yaml', '_sounddevice_data'],
     'includes': ['_cffi_backend'],
     'frameworks': ['/opt/homebrew/lib/libportaudio.dylib'],
@@ -20,6 +21,7 @@ OPTIONS = {
     'semi_standalone': False,
     'site_packages': True,
     'plist': {
+        'CFBundleIconFile': 'hey-claude',
         'CFBundleIdentifier': 'com.user.hey-claude',
         'CFBundleName': 'Hey Claude',
         'CFBundleDisplayName': 'Hey Claude',

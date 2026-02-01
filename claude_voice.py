@@ -467,6 +467,8 @@ class VoiceCommandDaemon:
 
                             if keyword_index >= 0:
                                 self.logger.info("Wake word detected: 'Hey Claude'")
+                                # Play chime to indicate wake word detected
+                                self._play_chime()
                                 break  # Exit stream context to close it before recording
 
                     # If wake word was detected, handle command (stream is now closed)
@@ -522,6 +524,31 @@ class VoiceCommandDaemon:
                 os.unlink(audio_path)
             except Exception:
                 pass
+
+    def _play_chime(self):
+        """Play a chime sound and show notification when wake word detected"""
+        try:
+            # Play macOS system sound (non-blocking)
+            subprocess.Popen(
+                ["afplay", "/System/Library/Sounds/Pop.aiff"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+        except Exception:
+            pass
+
+        try:
+            # Show macOS notification banner with app icon (non-blocking)
+            icon_path = "file://" + str(PROJECT_DIR / "icon.png")
+            subprocess.Popen(
+                ["/opt/homebrew/bin/terminal-notifier", "-title", "Hey Claude",
+                 "-message", "Listening...", "-sender", "com.user.hey-claude",
+                 "-appIcon", icon_path],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+        except Exception:
+            pass
 
     def _log_command(self, command: str):
         """Log command to history file"""

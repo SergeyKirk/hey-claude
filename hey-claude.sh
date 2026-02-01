@@ -117,6 +117,7 @@ case "$1" in
         echo -e "${YELLOW}Copying configuration and wake word model...${NC}"
         cp "$PROJECT_DIR/config.yaml" "$RESOURCES_PATH/"
         cp -r "$PROJECT_DIR/wake-word" "$RESOURCES_PATH/"
+        cp "$PROJECT_DIR/icon.png" "$RESOURCES_PATH/"
         mkdir -p "$RESOURCES_PATH/logs"
 
         echo ""

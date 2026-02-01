@@ -9,6 +9,7 @@ Always-on macOS voice assistant that listens for "Hey Claude" and executes comma
 - Automatic Claude Code execution in new iTerm tab
 - Voice responses via VoiceMode MCP (Whisper + Kokoro TTS)
 - Runs as background app (no terminal window needed)
+- Sound + notification when wake word detected
 - Built-in mic support to avoid Bluetooth audio quality issues
 
 ## Prerequisites
@@ -19,6 +20,7 @@ Always-on macOS voice assistant that listens for "Hey Claude" and executes comma
 - **[VoiceMode MCP](https://github.com/mbailey/voicemode)** installed and running
 - **[Picovoice](https://picovoice.ai/)** account (free tier)
 - **iTerm2** (recommended) or Terminal.app
+- **terminal-notifier** (`brew install terminal-notifier`)
 
 ## Installation
 

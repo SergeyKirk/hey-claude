@@ -95,13 +95,21 @@ Always-on macOS voice assistant that listens for "Hey Claude" wake word and exec
 - Added `build-app` and `start-app` commands
 - App runs as background process (LSUIElement=true)
 
+### 2026-02-01 - UX Improvements
+- Added configurable wake word sensitivity (default 0.8)
+- Fixed audio stream conflict: close stream before recording, reopen after
+- Added sound feedback (Pop.aiff) when wake word detected
+- Added notification banner with custom icon using terminal-notifier
+- Created custom app icon (coral microphone on dark background)
+- Added icon to app bundle and notifications
+
 ---
 
 ## Future Improvements
 
 - [ ] Research proper code signing for distribution
-- [ ] Add notification when wake word detected
-- [ ] Add voice feedback ("I heard you")
+- [x] Add notification when wake word detected
+- [x] Add voice feedback ("I heard you")
 - [ ] Support multiple wake words
 - [ ] Explore Homebrew formula for easier install
 
