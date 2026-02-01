@@ -447,36 +447,43 @@ class VoiceCommandDaemon:
         input_device = self.config["audio"].get("input_device", "MacBook Pro Microphone")
 
         try:
-            # Keep audio stream open continuously for reliable wake word detection
-            with sd.InputStream(
-                device=input_device,
-                samplerate=sample_rate,
-                channels=1,
-                dtype=np.int16,
-                blocksize=frame_length,
-                latency='low'
-            ) as stream:
-                self.logger.info(f"Audio stream opened on: {input_device}")
+            while self.running:
+                # Open stream for wake word detection
+                try:
+                    with sd.InputStream(
+                        device=input_device,
+                        samplerate=sample_rate,
+                        channels=1,
+                        dtype=np.int16,
+                        blocksize=frame_length,
+                        latency='low'
+                    ) as stream:
+                        self.logger.info(f"Listening for 'Hey Claude'...")
 
-                while self.running:
-                    # Read and process audio frame
-                    frame, _ = stream.read(frame_length)
-                    keyword_index = self.porcupine.process(frame.flatten())
+                        while self.running:
+                            # Read and process audio frame
+                            frame, _ = stream.read(frame_length)
+                            keyword_index = self.porcupine.process(frame.flatten())
 
+                            if keyword_index >= 0:
+                                self.logger.info("Wake word detected: 'Hey Claude'")
+                                break  # Exit stream context to close it before recording
+
+                    # If wake word was detected, handle command (stream is now closed)
                     if keyword_index >= 0:
-                        self.logger.info("Wake word detected: 'Hey Claude'")
                         self._handle_command()
-                        # Flush audio buffer after command to avoid stale audio
-                        for _ in range(5):
-                            stream.read(frame_length)
-                        self.logger.info("Ready for next command. Say 'Hey Claude' to activate.")
+                        self.logger.info("Ready for next command.")
+                        # Small delay before reopening stream
+                        time.sleep(0.3)
 
-        except sd.PortAudioError as e:
-            self.logger.error(f"Audio device error: {e}")
-            self.logger.error(f"Device '{input_device}' not found. Available devices:")
-            for d in sd.query_devices():
-                if d['max_input_channels'] > 0:
-                    self.logger.error(f"  - {d['name']}")
+                except sd.PortAudioError as e:
+                    self.logger.error(f"Audio device error: {e}")
+                    self.logger.error(f"Device '{input_device}' not found. Available devices:")
+                    for d in sd.query_devices():
+                        if d['max_input_channels'] > 0:
+                            self.logger.error(f"  - {d['name']}")
+                    time.sleep(1)
+
         except KeyboardInterrupt:
             self.logger.info("Shutting down...")
         except Exception as e:
