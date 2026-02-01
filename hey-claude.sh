@@ -126,6 +126,14 @@ case "$1" in
         cp "$PROJECT_DIR/icon.png" "$RESOURCES_PATH/"
         mkdir -p "$RESOURCES_PATH/logs"
 
+        # Register app with macOS so notification icon works
+        echo -e "${YELLOW}Registering app with macOS...${NC}"
+        /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$APP_PATH"
+        # Open briefly to fully register icon, then close
+        open "$APP_PATH"
+        sleep 2
+        pkill -f "Hey Claude" 2>/dev/null || true
+
         echo ""
         echo -e "${GREEN}Build complete!${NC}"
         echo ""

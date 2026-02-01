@@ -124,6 +124,9 @@ class AudioRecorder:
         # Play a short beep to indicate recording started
         self._play_start_sound()
 
+        # Cancel flag file path
+        cancel_file = PROJECT_DIR / "logs" / ".cancel_command"
+
         try:
             with sd.InputStream(
                 device=self.input_device,  # Use specific device, not system default
@@ -133,6 +136,13 @@ class AudioRecorder:
                 blocksize=chunk_samples
             ) as stream:
                 while self.is_recording:
+                    # Check if user cancelled via notification
+                    if cancel_file.exists():
+                        self.logger.info("Command cancelled by user")
+                        cancel_file.unlink(missing_ok=True)
+                        self.audio_buffer = []
+                        return None
+
                     # Check max duration
                     elapsed = time.time() - start_time
                     if elapsed >= self.max_duration:
@@ -514,6 +524,17 @@ class VoiceCommandDaemon:
                 self.logger.warning("Transcription failed or empty")
                 return
 
+            # Check for blank/empty transcriptions (Whisper returns these for silence/noise)
+            blank_patterns = [
+                "[BLANK_AUDIO]", "[blank_audio]", "(no speech)", "",
+                "(speaking in foreign language)", "(foreign language)",
+                "(music)", "(noise)", "(silence)", "(applause)", "(laughter)"
+            ]
+            cleaned_cmd = command.strip().lower()
+            if cleaned_cmd in [p.lower() for p in blank_patterns] or not cleaned_cmd:
+                self.logger.info("Blank audio detected, ignoring command")
+                return
+
             self.logger.info(f"Transcribed command: {command}")
 
             # Log the command
@@ -531,6 +552,13 @@ class VoiceCommandDaemon:
 
     def _play_chime(self):
         """Play a chime sound and show notification when wake word detected"""
+        # Clear any previous cancel flag
+        cancel_file = PROJECT_DIR / "logs" / ".cancel_command"
+        try:
+            cancel_file.unlink(missing_ok=True)
+        except Exception:
+            pass
+
         try:
             # Play macOS system sound (non-blocking)
             subprocess.Popen(
@@ -542,12 +570,13 @@ class VoiceCommandDaemon:
             pass
 
         try:
-            # Show macOS notification banner with app icon (non-blocking)
-            icon_path = "file://" + str(PROJECT_DIR / "icon.png")
+            # Show macOS notification with our app icon
+            # Note: -sender gives proper icon but breaks -execute for cancel
+            # Cancel fallback: blank audio detection ignores empty commands
             subprocess.Popen(
                 ["/opt/homebrew/bin/terminal-notifier", "-title", "Hey Claude",
-                 "-message", "Listening...", "-sender", "com.user.hey-claude",
-                 "-appIcon", icon_path],
+                 "-message", "Listening...",
+                 "-sender", "com.user.hey-claude", "-timeout", "5"],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL
             )
