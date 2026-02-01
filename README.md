@@ -1,6 +1,16 @@
 # Hey Claude - Voice Command System
 
-Always-on macOS voice assistant that listens for "Hey Claude" and executes commands via Claude Code.
+<p align="center">
+  <img src="assets/logo.png" alt="Hey Claude Logo" width="128" height="128">
+</p>
+
+<p align="center">
+  Always-on macOS voice assistant that listens for "Hey Claude" and executes commands via Claude Code.
+</p>
+
+<p align="center">
+  <img src="assets/notification.png" alt="Hey Claude Notification" width="400">
+</p>
 
 ## Features
 
