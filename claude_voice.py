@@ -469,10 +469,14 @@ class VoiceCommandDaemon:
                                 self.logger.info("Wake word detected: 'Hey Claude'")
                                 # Play chime to indicate wake word detected
                                 self._play_chime()
+                                self.logger.debug("Chime played, closing audio stream...")
                                 break  # Exit stream context to close it before recording
+
+                    self.logger.debug("Audio stream closed")
 
                     # If wake word was detected, handle command (stream is now closed)
                     if keyword_index >= 0:
+                        self.logger.debug("Calling handle_command...")
                         self._handle_command()
                         self.logger.info("Ready for next command.")
                         # Small delay before reopening stream
