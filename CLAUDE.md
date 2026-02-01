@@ -19,32 +19,17 @@ Always-on macOS voice assistant that listens for "Hey Claude" wake word and exec
 
 ---
 
-## Current State
+## Quick Reference
 
-### Working Features
-- Wake word detection ("Hey Claude") via Picovoice Porcupine
-- Voice command recording with "over" end trigger
-- Local Whisper transcription (port 2022)
-- Claude Code execution in new iTerm tab
-- Voice responses via Kokoro TTS (port 8880)
-- Built-in mic support (avoids Bluetooth audio quality issues)
-- **Background app via py2app** - runs silently with proper mic permissions
-
-### Two Ways to Run
-
-1. **Foreground (Terminal)**:
-   ```bash
-   ./manage.sh run
-   ```
-
-2. **Background App** (recommended):
-   ```bash
-   python3 setup.py py2app
-   cp config.yaml "dist/Hey Claude.app/Contents/Resources/"
-   cp -r Hey-Claude_en_mac_v4_0_0 "dist/Hey Claude.app/Contents/Resources/"
-   mkdir -p "dist/Hey Claude.app/Contents/Resources/logs"
-   open "dist/Hey Claude.app"
-   ```
+```bash
+./hey-claude.sh install     # First time setup
+./hey-claude.sh run         # Test in foreground
+./hey-claude.sh build-app   # Build background app
+./hey-claude.sh start-app   # Run background app
+./hey-claude.sh stop-app    # Stop app
+./hey-claude.sh status      # Check if running
+./hey-claude.sh logs        # View logs
+```
 
 ---
 
@@ -52,69 +37,63 @@ Always-on macOS voice assistant that listens for "Hey Claude" wake word and exec
 
 | File | Purpose |
 |------|---------|
-| `claude_voice.py` | Main daemon - wake word detection, recording, transcription, Claude launching |
-| `manage.sh` | Service management (install, run, logs) |
-| `setup.py` | py2app build configuration for standalone macOS app |
-| `config.yaml` | User configuration (gitignored - contains API key) |
-| `config.yaml.example` | Template configuration |
-| `Hey-Claude_en_mac_v4_0_0/` | Picovoice wake word model (user must download) |
+| `claude_voice.py` | Main daemon - wake word, recording, transcription, Claude launching |
+| `hey-claude.sh` | Management script (install, run, build-app, etc.) |
+| `setup.py` | py2app build configuration |
+| `config.yaml` | User config (gitignored) |
+| `config.yaml.example` | Template config |
+| `wake-word/hey-claude.ppn` | Picovoice wake word model (user downloads) |
+
+---
+
+## Installation Flow (New User)
+
+1. Clone repo + `./hey-claude.sh install`
+2. Get Picovoice account, download wake word model
+3. Place model at `wake-word/hey-claude.ppn`
+4. Copy and edit config.yaml with access key
+5. Test with `./hey-claude.sh run`
+6. Build app with `./hey-claude.sh build-app`
+7. Start with `./hey-claude.sh start-app`
+8. Add to Login Items for auto-start:
+   - Via Settings: System Settings > General > Login Items > Add app
+   - Via Terminal: `osascript -e 'tell application "System Events" to make login item at end with properties {path:"'$(pwd)'/dist/Hey Claude.app", hidden:false}'`
 
 ---
 
 ## Dependencies
 
-- **Picovoice Porcupine** - Wake word detection (requires free API key)
+- **Picovoice Porcupine** - Wake word detection (free API key required)
 - **VoiceMode MCP** - Whisper STT + Kokoro TTS (https://github.com/mbailey/voicemode)
 - **Claude Code CLI** - Command execution
 - **iTerm2** - Terminal for Claude sessions
-
----
-
-## Configuration
-
-Key settings in `config.yaml`:
-
-```yaml
-picovoice:
-  access_key: "YOUR_KEY"  # From console.picovoice.ai
-  wake_word_model: "Hey-Claude_en_mac_v4_0_0/Hey-Claude_en_mac_v4_0_0.ppn"
-
-audio:
-  input_device: "MacBook Pro Microphone"  # Avoids Bluetooth issues
-
-command:
-  end_keyword: "over"
-  silence_timeout: 2.0
-```
+- **py2app** - Builds standalone macOS app
 
 ---
 
 ## Known Issues & Solutions
 
-### Background Service (launchd) - NOT WORKING
-- macOS TCC blocks microphone access for launchd services
-- Solution: Use py2app to create proper .app bundle
-
-### Bluetooth Audio Quality Degradation
-- Cause: macOS switches to HFP mode when mic is accessed
-- Solution: Set `input_device: "MacBook Pro Microphone"` in config
-
-### VoiceMode Keeps Talking After Closing iTerm
-- Expected behavior - TTS runs independently
-- Fix: `pkill -f "kokoro\|tts"` or alias `shutup`
+| Issue | Solution |
+|-------|----------|
+| Bluetooth audio quality degrades | Set `input_device: "MacBook Pro Microphone"` in config |
+| launchd service can't access mic | Use py2app built app instead (has proper permissions) |
+| VoiceMode keeps talking after close | Run `pkill -f "kokoro\|tts"` |
+| App crashes on start | Check Console.app, verify config.yaml and wake-word exist |
 
 ---
 
 ## Session Log
 
-### 2025-02-01 (Initial Development)
+### 2025-02-01 - Initial Development
 - Created voice command system with Picovoice + Whisper + Claude Code
 - Fixed f-string syntax errors, python3/pip3 compatibility
-- Solved Bluetooth audio issue by using built-in mic
-- Discovered launchd mic permission issue (TCC)
+- Solved Bluetooth audio issue (use built-in mic)
+- Discovered launchd mic permission issue (TCC blocks it)
 - **Solution**: py2app creates proper macOS app with mic permissions
-- App runs as background process (LSUIElement=true, no Dock icon)
-- Ready for auto-start via Login Items
+- Simplified script: renamed manage.sh to hey-claude.sh
+- Simplified wake word path: `wake-word/hey-claude.ppn`
+- Added `build-app` and `start-app` commands
+- App runs as background process (LSUIElement=true)
 
 ---
 
@@ -122,19 +101,19 @@ command:
 
 - [ ] Research proper code signing for distribution
 - [ ] Add notification when wake word detected
+- [ ] Add voice feedback ("I heard you")
 - [ ] Support multiple wake words
-- [ ] Add voice feedback confirmation ("I heard you")
-- [ ] Explore Automator/AppleScript wrapper as alternative
+- [ ] Explore Homebrew formula for easier install
 
 ---
 
 ## Update Rules
 
 **ALWAYS update this CLAUDE.md when:**
-1. Adding new features or fixing bugs
-2. Changing configuration options
-3. Discovering new issues or solutions
-4. Making architectural decisions
-5. Updating dependencies or build process
+- Adding new features or fixing bugs
+- Changing configuration options
+- Discovering new issues or solutions
+- Making architectural decisions
+- Updating dependencies or build process
 
 Keep session log current with dated entries.

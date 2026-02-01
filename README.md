@@ -8,66 +8,82 @@ Always-on macOS voice assistant that listens for "Hey Claude" and executes comma
 - Natural voice commands with "over" end trigger (or 2-second pause)
 - Automatic Claude Code execution in new iTerm tab
 - Voice responses via VoiceMode MCP (Whisper + Kokoro TTS)
+- Runs as background app (no terminal window needed)
 - Built-in mic support to avoid Bluetooth audio quality issues
-- Secure access key handling via environment variables or config file
 
 ## Prerequisites
 
 - **macOS** with Apple Silicon (M1/M2/M3/M4)
 - **Python 3.10+**
 - **[Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code)** installed and configured
-- **[VoiceMode MCP](https://github.com/mbailey/voicemode)** with Whisper and Kokoro services running
-- **[Picovoice](https://picovoice.ai/)** account (free tier available)
+- **[VoiceMode MCP](https://github.com/mbailey/voicemode)** installed and running
+- **[Picovoice](https://picovoice.ai/)** account (free tier)
 - **iTerm2** (recommended) or Terminal.app
 
-## Quick Start
+## Installation
 
-### 1. Clone & Install
+### 1. Clone & Install Dependencies
 
 ```bash
 git clone https://github.com/SergeyKirk/hey-claude.git
 cd hey-claude
-./manage.sh install
+./hey-claude.sh install
 ```
 
-### 2. Get Picovoice Credentials
+### 2. Get Picovoice Wake Word
 
 1. Go to [console.picovoice.ai](https://console.picovoice.ai/)
-2. Sign up (free tier) and copy your **Access Key**
-3. Navigate to **Porcupine > Custom Wake Word**
-4. Type "Hey Claude", select **macOS (arm64)**, and download the `.ppn` file
-5. Extract and place the wake word folder (e.g., `Hey-Claude_en_mac_v4_0_0/`) in the project directory
+2. Sign up (free) and copy your **Access Key**
+3. Go to **Porcupine > Custom Wake Word**
+4. Type "Hey Claude", select **macOS (arm64)**, download the `.ppn` file
 
-### 3. Configure Access Key
+### 3. Set Up Wake Word Model
 
-**Option A: Environment Variable (Recommended)**
 ```bash
-# Add to ~/.zshrc or ~/.bashrc
-export PICOVOICE_ACCESS_KEY='your-access-key-here'
-source ~/.zshrc
+mkdir -p wake-word
+mv ~/Downloads/Hey-Claude_*.ppn wake-word/hey-claude.ppn
 ```
 
-**Option B: Config File**
+### 4. Configure
+
 ```bash
 cp config.yaml.example config.yaml
-# Edit config.yaml and set picovoice.access_key
 ```
 
-### 4. Start Voice Services
-
-Ensure VoiceMode services are running:
-```bash
-voicemode service start whisper  # STT on port 2022
-voicemode service start kokoro   # TTS on port 8880
+Edit `config.yaml` and add your Picovoice access key:
+```yaml
+picovoice:
+  access_key: "your-access-key-here"
 ```
 
-### 5. Run Hey Claude
+### 5. Test (Foreground Mode)
 
 ```bash
-./manage.sh run
+./hey-claude.sh run
 ```
 
-Keep this terminal window open - the voice assistant runs in the foreground.
+Say "Hey Claude" - if it detects your voice, you're ready for the next step.
+
+### 6. Build Background App
+
+```bash
+./hey-claude.sh build-app
+./hey-claude.sh start-app
+```
+
+On first launch, grant microphone permission when prompted.
+
+### 7. Auto-Start at Login (Optional)
+
+**Option A - Via System Settings:**
+1. Open **System Settings > General > Login Items**
+2. Click **+** under "Open at Login"
+3. Select `dist/Hey Claude.app`
+
+**Option B - Via Terminal:**
+```bash
+osascript -e 'tell application "System Events" to make login item at end with properties {path:"'$(pwd)'/dist/Hey Claude.app", hidden:false}'
+```
 
 ## Usage
 
@@ -75,174 +91,71 @@ Keep this terminal window open - the voice assistant runs in the foreground.
 2. Speak your command naturally
 3. Say **"over"** to finish (or pause for 2 seconds)
 4. Claude executes in a new iTerm tab and responds via voice
-5. After Claude finishes, say "Hey Claude" again for the next command
 
 ### Example Commands
 
 - "Hey Claude, what time is it, over"
 - "Hey Claude, create a Python function to sort a list, over"
-- "Hey Claude, explain this error message, over"
-- "Hey Claude, summarize this file, over"
+- "Hey Claude, explain this error, over"
 
-## Management Commands
+## Commands
 
 ```bash
-./manage.sh install   # Install dependencies
-./manage.sh run       # Run the voice assistant (foreground)
-./manage.sh logs      # View command history & logs
-./manage.sh uninstall # Remove launchd service (if installed)
+./hey-claude.sh install     # Install dependencies
+./hey-claude.sh run         # Run in foreground (testing)
+./hey-claude.sh build-app   # Build background app
+./hey-claude.sh start-app   # Start background app
+./hey-claude.sh stop-app    # Stop background app
+./hey-claude.sh status      # Check if running
+./hey-claude.sh logs        # View logs
 ```
 
 ## Configuration
 
-Edit `config.yaml` (copy from `config.yaml.example`):
+Edit `config.yaml`:
 
 ```yaml
 picovoice:
-  access_key: "YOUR_KEY"  # Or use PICOVOICE_ACCESS_KEY env var
-  wake_word_model: "Hey-Claude_en_mac_v4_0_0/Hey-Claude_en_mac_v4_0_0.ppn"
+  access_key: "YOUR_KEY"
+  wake_word_model: "wake-word/hey-claude.ppn"
 
 command:
-  end_keyword: "over"      # Word to end commands
-  silence_timeout: 2.0     # Seconds of silence to auto-end
-  max_duration: 30.0       # Maximum command length
+  end_keyword: "over"
+  silence_timeout: 2.0
 
 audio:
-  input_device: "default"  # Or "MacBook Pro Microphone" to force built-in mic
-
-claude:
-  working_directory: "~/Documents"
-  binary_path: "/opt/homebrew/bin/claude"
+  input_device: "default"  # Or "MacBook Pro Microphone"
 
 terminal:
-  app: "iterm"  # or "terminal"
+  app: "iterm"
 ```
 
-### Bluetooth Audio Quality Fix
+### Bluetooth Audio Fix
 
-If you use Bluetooth headphones and experience degraded audio quality, configure `input_device` to use your Mac's built-in microphone:
+If Bluetooth headphones sound bad when Hey Claude runs, use the built-in mic:
 
 ```yaml
 audio:
-  input_device: "MacBook Pro Microphone"  # or "Built-in Microphone"
-```
-
-This uses the built-in mic for wake word detection without affecting your headphone audio output. Your calls and other apps still use Bluetooth normally.
-
-To list available input devices:
-```bash
-python3 -c "import sounddevice; print(sounddevice.query_devices())"
-```
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────┐
-│  Porcupine Wake Word Detection              │
-│  (always listening, <1% CPU)                │
-└─────────────────┬───────────────────────────┘
-                  │ "Hey Claude" detected
-                  ▼
-┌─────────────────────────────────────────────┐
-│  Audio Recording (sounddevice)              │
-│  (built-in mic to avoid BT quality issues)  │
-└─────────────────┬───────────────────────────┘
-                  │ "over" or 2s silence
-                  ▼
-┌─────────────────────────────────────────────┐
-│  Whisper Transcription                      │
-│  (local whisper.cpp on port 2022)           │
-└─────────────────┬───────────────────────────┘
-                  │ transcribed text
-                  ▼
-┌─────────────────────────────────────────────┐
-│  Claude Code CLI (new iTerm tab)            │
-│  (executes command, responds via voice)     │
-└─────────────────────────────────────────────┘
+  input_device: "MacBook Pro Microphone"
 ```
 
 ## Troubleshooting
 
 ### Wake word not detected
-- Check microphone permissions: System Settings > Privacy & Security > Microphone
-- Ensure Terminal has microphone access
-- Verify the `.ppn` model file path is correct in config
-- Ensure your mic is not muted
+- Check microphone permissions in System Settings
+- Verify `wake-word/hey-claude.ppn` exists
+- Run `./hey-claude.sh run` to see debug output
 
-### Whisper transcription fails
-- Verify Whisper service: `curl http://localhost:2022/health`
-- Start Whisper: `voicemode service start whisper`
-
-### Claude doesn't respond via voice
-- Ensure Kokoro TTS is running: `voicemode service start kokoro`
-- Check VoiceMode MCP is configured in Claude Code settings
-
-### Audio quality degraded (Bluetooth headphones)
-- This happens when macOS switches your headphones to HFP mode
-- Solution: Set `input_device: "MacBook Pro Microphone"` in config.yaml
+### App doesn't start
+- Run `./hey-claude.sh build-app` first
+- Check Console.app for crash logs
 
 ### VoiceMode keeps talking after closing iTerm
-- The TTS process runs independently
-- Stop it with: `pkill -f "kokoro\|tts"` (or add as alias: `alias shutup='pkill -f "kokoro\|tts"'`)
-
-## Running as Background App
-
-To run Hey Claude as a true background app (no terminal window needed):
-
-### Build the App
-
-```bash
-# Install py2app
-pip3 install py2app
-
-# Build the app
-python3 setup.py py2app
-```
-
-### Configure the App
-
-Copy your config and wake word model into the app bundle:
-```bash
-cp config.yaml "dist/Hey Claude.app/Contents/Resources/"
-cp -r Hey-Claude_en_mac_v4_0_0 "dist/Hey Claude.app/Contents/Resources/"
-mkdir -p "dist/Hey Claude.app/Contents/Resources/logs"
-```
-
-### Launch
-
-```bash
-open "dist/Hey Claude.app"
-```
-
-On first launch, macOS will prompt for microphone permission - click **Allow**.
-
-### Auto-start at Login
-
-1. Open **System Settings > General > Login Items**
-2. Click **+** under "Open at Login"
-3. Navigate to `dist/Hey Claude.app` and add it
-
-The app runs silently in the background (no Dock icon).
-
-## Known Limitations
-
-- **macOS only**: Uses Picovoice wake word models compiled for macOS arm64.
-
-## Security
-
-- Access keys are never committed to git (`.gitignore`)
-- Use environment variables or gitignored config.yaml
-- Never share your Picovoice access key
+- Run: `pkill -f "kokoro\|tts"`
 
 ## License
 
-MIT License - See [LICENSE](LICENSE) file
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request
+MIT License - See [LICENSE](LICENSE)
 
 ---
 

@@ -4,8 +4,8 @@
 picovoice:
   # Get your access key from https://console.picovoice.ai/
   access_key: "YOUR_PICOVOICE_ACCESS_KEY"
-  # Path to the wake word model file
-  wake_word_model: "Hey-Claude_en_mac_v4_0_0/Hey-Claude_en_mac_v4_0_0.ppn"
+  # Path to the wake word model file (download from Picovoice Console)
+  wake_word_model: "wake-word/hey-claude.ppn"
 
 # Speech-to-text settings
 stt:

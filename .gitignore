@@ -36,9 +36,8 @@ config.yaml
 *.wav
 *.mp3
 
-# Picovoice model files (user must download their own)
-*.ppn
-Hey-Claude_*/
+# Picovoice wake word model (user must download their own)
+wake-word/
 
 # py2app build artifacts
 build/
