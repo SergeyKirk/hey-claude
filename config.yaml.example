@@ -6,6 +6,8 @@ picovoice:
   access_key: "YOUR_PICOVOICE_ACCESS_KEY"
   # Path to the wake word model file (download from Picovoice Console)
   wake_word_model: "wake-word/hey-claude.ppn"
+  # Wake word detection sensitivity (0.0 to 1.0, higher = more sensitive but more false positives)
+  sensitivity: 0.75
 
 # Speech-to-text settings
 stt:

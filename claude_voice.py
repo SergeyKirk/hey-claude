@@ -420,11 +420,13 @@ class VoiceCommandDaemon:
             sys.exit(1)
 
         try:
+            sensitivity = self.config.get('picovoice', {}).get('sensitivity', 0.5)
             self.porcupine = pvporcupine.create(
                 access_key=access_key,
-                keyword_paths=[str(model_path)]
+                keyword_paths=[str(model_path)],
+                sensitivities=[sensitivity]
             )
-            self.logger.info("Porcupine wake word detector initialized")
+            self.logger.info(f"Porcupine wake word detector initialized (sensitivity: {sensitivity})")
         except Exception as e:
             self.logger.error(f"Failed to initialize Porcupine: {e}")
             self.logger.error("Check your access key in config.yaml")
