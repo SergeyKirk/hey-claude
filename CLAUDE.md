@@ -103,8 +103,9 @@ Always-on macOS voice assistant that listens for "Hey Claude" wake word and exec
 - Created custom app icon (coral microphone on dark background)
 - Added icon to app bundle and notifications
 - Added blank audio detection: ignores "[BLANK_AUDIO]", "(speaking in foreign language)", etc.
-- Notification shows app icon (requires `-sender`, which breaks click actions)
-- Cancel via silence: just don't speak and blank audio is ignored
+- Replaced terminal-notifier with macos-notifications library for Cancel button support
+- Notification shows Hey Claude icon + Cancel button (when running from built app)
+- Click Cancel to abort, or stay silent for blank audio detection fallback
 
 ---
 

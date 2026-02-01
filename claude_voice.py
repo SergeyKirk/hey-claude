@@ -24,6 +24,7 @@ import yaml
 import numpy as np
 import sounddevice as sd
 import requests
+from mac_notifications import client as notif_client
 
 # Defer pvporcupine import to handle missing access key gracefully
 pvporcupine = None
@@ -419,6 +420,7 @@ class VoiceCommandDaemon:
         self._init_porcupine()
 
         self.running = False
+        self.cancel_requested = False  # Flag for notification cancel button
 
     def _init_porcupine(self):
         """Initialize Porcupine wake word detector"""
@@ -553,6 +555,7 @@ class VoiceCommandDaemon:
     def _play_chime(self):
         """Play a chime sound and show notification when wake word detected"""
         # Clear any previous cancel flag
+        self.cancel_requested = False
         cancel_file = PROJECT_DIR / "logs" / ".cancel_command"
         try:
             cancel_file.unlink(missing_ok=True)
@@ -570,16 +573,26 @@ class VoiceCommandDaemon:
             pass
 
         try:
-            # Show macOS notification with our app icon
-            # Note: -sender gives proper icon but breaks -execute for cancel
-            # Cancel fallback: blank audio detection ignores empty commands
-            subprocess.Popen(
-                ["/opt/homebrew/bin/terminal-notifier", "-title", "Hey Claude",
-                 "-message", "Listening...",
-                 "-sender", "com.user.hey-claude", "-timeout", "5"],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
+            # Show macOS notification with Cancel button
+            # Using macos-notifications library for action button support
+            icon_path = str(PROJECT_DIR / "icon.png")
+            notif_client.create_notification(
+                title="Hey Claude",
+                subtitle="Listening... (click Cancel to stop)",
+                icon=icon_path,
+                action_button_str="Cancel",
+                action_callback=self._on_cancel_clicked
             )
+        except Exception as e:
+            self.logger.debug(f"Notification error: {e}")
+
+    def _on_cancel_clicked(self):
+        """Callback when Cancel button is clicked on notification"""
+        self.cancel_requested = True
+        # Also create cancel file for recording loop to detect
+        cancel_file = PROJECT_DIR / "logs" / ".cancel_command"
+        try:
+            cancel_file.touch()
         except Exception:
             pass
 
