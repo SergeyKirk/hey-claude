@@ -185,9 +185,47 @@ python3 -c "import sounddevice; print(sounddevice.query_devices())"
 - The TTS process runs independently
 - Stop it with: `pkill -f "kokoro\|tts"` (or add as alias: `alias shutup='pkill -f "kokoro\|tts"'`)
 
+## Running as Background App
+
+To run Hey Claude as a true background app (no terminal window needed):
+
+### Build the App
+
+```bash
+# Install py2app
+pip3 install py2app
+
+# Build the app
+python3 setup.py py2app
+```
+
+### Configure the App
+
+Copy your config and wake word model into the app bundle:
+```bash
+cp config.yaml "dist/Hey Claude.app/Contents/Resources/"
+cp -r Hey-Claude_en_mac_v4_0_0 "dist/Hey Claude.app/Contents/Resources/"
+mkdir -p "dist/Hey Claude.app/Contents/Resources/logs"
+```
+
+### Launch
+
+```bash
+open "dist/Hey Claude.app"
+```
+
+On first launch, macOS will prompt for microphone permission - click **Allow**.
+
+### Auto-start at Login
+
+1. Open **System Settings > General > Login Items**
+2. Click **+** under "Open at Login"
+3. Navigate to `dist/Hey Claude.app` and add it
+
+The app runs silently in the background (no Dock icon).
+
 ## Known Limitations
 
-- **Requires terminal window**: Currently runs in foreground via `./manage.sh run`. Background service (`./manage.sh start`) exists but has macOS microphone permission issues with launchd.
 - **macOS only**: Uses Picovoice wake word models compiled for macOS arm64.
 
 ## Security

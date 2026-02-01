@@ -39,3 +39,8 @@ config.yaml
 # Picovoice model files (user must download their own)
 *.ppn
 Hey-Claude_*/
+
+# py2app build artifacts
+build/
+dist/
+*.egg-info/
