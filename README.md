@@ -26,11 +26,11 @@
 
 - **macOS** with Apple Silicon (M1/M2/M3/M4)
 - **Python 3.10+**
+- **Homebrew** (for installing terminal-notifier)
 - **[Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code)** installed and configured
 - **[VoiceMode MCP](https://github.com/mbailey/voicemode)** installed and running
 - **[Picovoice](https://picovoice.ai/)** account (free tier)
 - **iTerm2** (recommended) or Terminal.app
-- **terminal-notifier** (`brew install terminal-notifier`)
 
 ## Installation
 

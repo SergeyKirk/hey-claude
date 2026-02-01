@@ -32,6 +32,12 @@ case "$1" in
         pip3 install -r "$PROJECT_DIR/requirements.txt" -q
         pip3 install py2app -q
 
+        # Install terminal-notifier for notifications
+        if ! command -v terminal-notifier &> /dev/null; then
+            echo -e "${YELLOW}Installing terminal-notifier...${NC}"
+            brew install terminal-notifier -q
+        fi
+
         # Create logs directory
         mkdir -p "$PROJECT_DIR/logs"
 
